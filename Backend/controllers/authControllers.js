@@ -1,7 +1,7 @@
 import uploadImage from "../config/cloudinary.js";
 import { createToken } from "../config/token.js";
 import User from "../models/UserModel.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import validator from "validator";
 export const signUp=async(req,res)=>{
   try {
@@ -39,6 +39,39 @@ export const signUp=async(req,res)=>{
   });
   return res.status(201).json(user);
   } catch (error) {
-    return res.status(500).json({message:"Internal server error"});
+    return res.status(500).json({message:"Sign up failed"});
   }
+}
+export const signIn=async (req,res) => {
+ try {
+   const {email,password}=req.body;
+   if(!email || !password){
+     return res.status(400).json({message:"All fields are required"});
+   }
+   const user=await User.findOne({email});
+   if(!user){
+     return res.status(400).json({message:"User not found"});
+   }
+   const isMatch=await bcrypt.compare(password,user.password);
+   if(!isMatch){
+     return res.status(400).json({message:"Invalid credentials"});
+   }
+   const token = createToken(user._id);
+   res.cookie("token",token,{httpOnly:true,
+     secure:false,
+     sameSite:"Strict",
+     maxAge:7*24*60*60*1000
+   });
+   return res.status(200).json(user);
+ } catch (error) {
+   return res.status(500).json({message:"Sign in failed"});
+ }
+}
+export const signOut=async (req,res) => {
+try {
+  await res.clearCookie("token")
+  return res.status(200).json({message:"Signout Successfully"})
+} catch (error) {
+     return res.status(500).json({message:"Sign Out  failed"});
+}
 }
