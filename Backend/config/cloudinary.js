@@ -9,18 +9,18 @@ const uploadImage = async (imagePath) => {
 });
 
   try {
-    if(!imagePath) return null;
+    if(!imagePath){
+       return null;
+    }
     // Upload the image
     const result = await cloudinary.uploader.upload(imagePath,{resource_type: "auto"});
   
     // Remove the image from the local file system
-    fs.unlinkSync(imagePath);
-
+    fs.unlinkSync(imagePath)
     return result.secure_url;
     } catch (error) {
-       // Remove the image from the local file system
-    fs.unlinkSync(imagePath);
       console.error(error);
+      fs.unlinkSync(imagePath)
     }
 };
 export default uploadImage;

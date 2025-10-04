@@ -4,7 +4,7 @@ import Home from './pages/Home'
 import SignUp from './pages/SignUp'
 import SignIn from './pages/SignIn'
 import { ToastContainer } from 'react-toastify';
-
+export const backendUrl="http://localhost:5000"
 const App = () => {
   return (
     <div>

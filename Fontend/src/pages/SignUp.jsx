@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import logo from "../assets/playtube.jpg";
 import { CgProfile } from "react-icons/cg";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router";
 import axios from 'axios';
+import { backendUrl } from "../App";
+import { ClipLoader } from "react-spinners";
 const SignUp = () => {
   const [page, setpage] = useState(1);
   const [userName, setuserName] = useState("");
@@ -15,7 +17,7 @@ const SignUp = () => {
   const [fontImage, setfontImage] = useState(null);
   const [backendImage, setbackendImage] = useState(null);
   const navigate = useNavigate();
-
+  const [loading, setloading] = useState(false);
   const handelar = (e) => {
     const file = e.target.files[0];
     setbackendImage(file);
@@ -57,6 +59,35 @@ const SignUp = () => {
       navigate("/");
     }
   };
+  const handelSignUp = async () => {
+    if (!backendImage) {
+      toast.error("Profile picture required");
+      return;
+    }
+    setloading(true);
+    const formData = new FormData();
+    formData.append("userName", userName);
+    formData.append("email", email);
+    formData.append("password", password);
+    formData.append("photoUrl", backendImage);
+    try {
+      const response = await axios.post(
+        `${backendUrl}/api/auth/signup`,
+        formData,
+        { withCredentials: true }
+      );
+      console.log(response);
+      if (response.status === 201) {
+        toast.success("Account created successfully");
+        navigate("/");
+      }
+      setloading(false);
+    } catch (error) {
+      console.log(error);
+      setloading(false);
+    }
+  }
+
 
   return (
     <div className="bg-black h-screen w-screen text-white flex justify-center items-center">
@@ -67,8 +98,8 @@ const SignUp = () => {
         </div>
         {page === 1 && (
           <>
-            <div className="flex items-center gap-4">
-              <img src={logo} alt="" className="h-8 w-8 rounded-4xl" />
+            <div className="flex items-center gap-4 min-w-70">
+              <img src={logo} alt="" className="h-8 w-8 rounded-full" />
               <p className="text-2xl font-extrabold">Basic Info</p>
             </div>
 
@@ -89,7 +120,7 @@ const SignUp = () => {
               required
             />
             <button
-              className="bg-orange-400 w-25 p-2 rounded-4xl ml-45 mt-4 cursor-pointer hover:bg-amber-700"
+              className="bg-orange-400 w-32 p-2 rounded-full ml-30 mt-4 cursor-pointer hover:bg-amber-700"
               onClick={handelNext}
             >
               Next
@@ -102,7 +133,7 @@ const SignUp = () => {
               <img src={logo} alt="" className="h-8 w-8 rounded-4xl" />
               <p className="text-2xl font-extrabold">Security</p>
             </div>
-            <div className="flex items-center gap-2 bg-gray-600 p-2 rounded-4xl">
+            <div className="flex items-center gap-2 bg-gray-600 p-2 rounded-full">
               <CgProfile className="w-8 h-8" />
               <p>{email}</p>
             </div>
@@ -151,22 +182,22 @@ const SignUp = () => {
             <div className="flex  items-center gap-1">
               <div>
                 {fontImage ? (
-                  <img src={fontImage} alt="profileimage" />
+                  <img src={fontImage} alt="profileimage"  className="h-24 w-24 rounded-full"/>
                 ) : (
-                  <CgProfile className="h-22 w-22" />
+                  <CgProfile className="h-24 w-24" />
                 )}
               </div>
-              <div className="flex flex-col w-58 p-2 gap-2">
+              <div className="flex flex-col w-56 p-2 gap-2">
                 <b>Choose Profile Picture</b>
                 <input
-                  type="file"
+                  type="file" accept="image/*"
                   className="bg-orange-400 p-2 rounded-2xl"
                   onChange={handelar}
                 />
               </div>
             </div>
-            <button className="bg-green-400 w-40 p-2 rounded-4xl ml-35 mt-4 cursor-pointer hover:bg-amber-700">
-              Create Account
+            <button className="bg-green-400 w-40 p-2 rounded-full ml-35 mt-4  hover:bg-amber-700 cursor-pointer" onClick={handelSignUp} disabled={loading}>
+              {loading ? <ClipLoader className="text-black size-20"/>: "Create Account"}
             </button>
           </>
         )}

@@ -9,23 +9,25 @@ export const signUp=async(req,res)=>{
       if(!userName || !email || !password){
     return res.status(400).json({message:"All fields are required"});
   }
-     let photoUrl;
+  // Handle file upload if a file is provided
+ let photoUrl
   if(req.file){
     photoUrl=await uploadImage(req.file.path);
   }
-    const existingUser=await User.findOne({email});
-  if(existingUser){
-    return res.status(400).json({message:"User already exists"});
+  // Check if user already exists
+    const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    return res.status(400).json({ message: "User already exists" });
   }
-
+// Validate email and password
   if(!validator.isEmail(email)){
     return res.status(400).json({message:"Invalid email format"});
   }
-  if(!validator.isStrongPassword(password)){
-    return res.status(400).json({message:"Password must be at least 8 characters long and contain a mix of letters, numbers, and symbols"});
+  if(password.length<8){
+    return res.status(400).json({message:"Password must be at least 8 characters long"});
   }
   const hashedPassword=await bcrypt.hash(password,10);
-  const user=User.create({
+  const user=await User.create({
     userName,
     email,
     password:hashedPassword,
@@ -39,7 +41,9 @@ export const signUp=async(req,res)=>{
   });
   return res.status(201).json(user);
   } catch (error) {
-    return res.status(500).json({message:"Sign up failed"});
+    console.log(error);
+    
+    return res.status(500).json({message:`Sign up failed ${error.message}`});
   }
 }
 export const signIn=async (req,res) => {
@@ -48,6 +52,7 @@ export const signIn=async (req,res) => {
    if(!email || !password){
      return res.status(400).json({message:"All fields are required"});
    }
+   
    const user=await User.findOne({email});
    if(!user){
      return res.status(400).json({message:"User not found"});
@@ -64,7 +69,8 @@ export const signIn=async (req,res) => {
    });
    return res.status(200).json(user);
  } catch (error) {
-   return res.status(500).json({message:"Sign in failed"});
+    return res.status(500).json({message:`Sign in failed ${error.message}`});
+  
  }
 }
 export const signOut=async (req,res) => {
@@ -72,6 +78,7 @@ try {
   await res.clearCookie("token")
   return res.status(200).json({message:"Signout Successfully"})
 } catch (error) {
-     return res.status(500).json({message:"Sign Out  failed"});
+      return res.status(500).json({message:`Sign out failed ${error.message}`});
+  
 }
 }

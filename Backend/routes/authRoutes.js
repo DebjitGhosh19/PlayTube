@@ -7,6 +7,6 @@ const authRoute=express.Router();
 
 authRoute.post('/signup',upload.single('photoUrl'),signUp)
 authRoute.post('/signin',signIn)
-authRoute.get('signout',signOut)
+authRoute.get('/signout',signOut)
 
 export default authRoute
